@@ -1,3 +1,4 @@
+
 package com.example.myapplication;
 
 import android.os.RemoteException;
@@ -28,58 +29,46 @@ import com.example.myapplication.DeviceHelper;
 
 import org.json.JSONObject;
 
+
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
 public class IsoMessage {
-    
-    public boolean sendPublicKey(String publicKey) {
+
+    public boolean sendPublicKey(String publicKey, String modulus, String exponent) {
         try {
+            String serialNo = getSerialNumber();
+            String data = serialNo + "|" + publicKey + "|" + modulus + "|" + exponent;
 
-            Packager packager = new Packager();
-            ISOMsg rspIsoMsg = new ISOMsg();
+            Socket socket = new Socket("3.6.122.107", 14937);
+            OutputStream outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
 
-            ISOMsg isoMsg = new ISOMsg();
-            isoMsg.setPackager(packager);
+            outputStream.write(data.getBytes());
+            outputStream.flush();
 
-            Logger logger = new Logger();
-            ProtectedLogListener protLog = new ProtectedLogListener();
-            Configuration conf = new SimpleConfiguration();
-            conf.put("protect", "2 35");
-            conf.put("wipe", "52");
-            protLog.setConfiguration(conf);
-            logger.addListener((LogListener) new SimpleLogListener(System.out));
-            logger.addListener(protLog);
+            byte[] buffer = new byte[1024]; // Adjust the size according to your expected response size
+            int bytesRead = inputStream.read(buffer);
 
-            ASCIIChannel channel = new ASCIIChannel("3.6.122.107", 12809, packager);
-            channel.setLogger(logger, "TestLogger");
+            if (bytesRead > 0) {
+                String responseString = new String(buffer, 0, bytesRead);
+                // Process the response string as needed
+                // ...
 
-            try {
-                channel.connect();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false; // Return false on connection failure
+                // For example, you can log the response
+                System.out.println("Received response: " + responseString);
+
+                // Check the responseString for success or failure based on your application logic
+                return responseString.equals("00");
+            } else {
+                System.out.println("Failed to receive response");
+                return false; // Return false on receive failure
             }
-
-
-            if (channel.isConnected()) {
-                String serialNo = getSerialNumber();
-
-                String serialDXInfo = serialNo + "|" + publicKey;
-
-                channel.send(serialDXInfo.getBytes());
-            }
-
-            try {
-                rspIsoMsg = channel.receive();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false; // Return false rsp on receive failure
-            }
-
-            channel.disconnect();
-
-            return rspIsoMsg.getString(39).equals("00"); // Return true for success, false for failure
         } catch (Exception e) {
-            Log.e("MyApp", "Error: " + e.getMessage());
             e.printStackTrace();
+            System.err.println("Error: " + e.getMessage());
             return false; // Return false on exception
         }
     }
@@ -91,7 +80,13 @@ public class IsoMessage {
         return deviceInfo.getSerialNo();
 
     }
+
+    public static void main(String[] args) {
+        IsoMessage isoMessage = new IsoMessage();
+        isoMessage.sendPublicKey("publicKey", "modulus", "exponent");
+    }
 }
+
 
 
 
