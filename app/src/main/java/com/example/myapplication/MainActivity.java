@@ -1,9 +1,4 @@
-
 package com.example.myapplication;
-
-
-
-import static com.example.myapplication.R.id.ShowKeys;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -25,6 +20,7 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 public class MainActivity extends AppCompatActivity {
+
     private SharedPreferences sharedPreferences;
     private Context mContext;
     private String modulusString; // Declare modulusString variable
@@ -42,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         Button generateButton = findViewById(R.id.Generate);
         Button showKeysButton = findViewById(R.id.ShowKeys);
         Button sendKeysButton = findViewById(R.id.SendKeys);
+        Button checkKeysButton = findViewById(R.id.CheckKeys);
 
         generateButton.setOnClickListener(v -> {
             try {
@@ -98,53 +95,50 @@ public class MainActivity extends AppCompatActivity {
         });
 
         sendKeysButton.setOnClickListener(v -> {
-
             // Retrieve the public key from SharedPreferences
-
             String publicKeyString = sharedPreferences.getString("publicKey", "");
 
-
             if (!publicKeyString.isEmpty()) {
-
-                new Thread(() ->{
+                new Thread(() -> {
                     try {
                         // Call the IsoMessage class to send the public key
-                        IsoMessage isoMessage = new IsoMessage();
+                        IsoMessage isoMessage = new IsoMessage(sharedPreferences);
                         boolean success = isoMessage.sendPublicKey(publicKeyString, modulusString, exponentString);
 
                         if (success) {
                             // Handle a successful transaction
-                            this.runOnUiThread(()->{
-                                Toast.makeText(this, "public key sent ", Toast.LENGTH_SHORT).show();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity.this, "Public key sent", Toast.LENGTH_SHORT).show();
                             });
                         } else {
-
                             // Handle the case where it failed to reach the server
-                            this.runOnUiThread(()->{
-                                Toast.makeText(this, "Failed to reach the server", Toast.LENGTH_SHORT).show();
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity.this, "Failed to reach the server", Toast.LENGTH_SHORT).show();
                             });
                         }
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        this.runOnUiThread(()->{
-                            Toast.makeText(this, "Failed to send the public key", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this, "Failed to send the public key", Toast.LENGTH_SHORT).show();
                         });
-
                     }
                 }).start();
-
             } else {
-                Toast.makeText(this, "Public Key not found in SharedPreferences", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Public Key not found in SharedPreferences", Toast.LENGTH_SHORT).show();
             }
         });
 
+        checkKeysButton.setOnClickListener(v -> {
+            new Thread(() -> {
+                // Call the CheckCrt class to test if the private key can decrypt a message encrypted with the public key
+                CheckCrt checkCrt = new CheckCrt();
+                checkCrt.main(null, getApplicationContext());
 
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Keys Checked", Toast.LENGTH_SHORT).show();
+                });
+            }).start();
+        });
     }
 }
-
-
-
-
-
-

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TextView
@@ -30,28 +30,27 @@
         android:text="Encrypt Keys" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/CheckKeys"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Decrypt Keys" />
+        android:text="Check Keys" />
 
     <Button
         android:id="@+id/ShowKeys"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Show Keys"
-        android:onClick="button3Click" />
+        android:onClick="button3Click"
+        android:text="Show Keys" />
 
     <Button
         android:id="@+id/SendKeys"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Send Keys"
-        android:onClick="button3Click" />
-
+        android:onClick="button3Click"
+        android:text="Send Keys" />
 
 
 </LinearLayout>
